@@ -42,6 +42,7 @@ interface ApplicationFormData {
   lastName: string;
   contact: string;
   phone: string;
+  location: string;
   isWashbasin: boolean;
   isRefrigerator: boolean;
   isGarage: boolean;
@@ -71,6 +72,7 @@ export default function ApplicationFormScreen() {
     lastName: inspectionData?.applicationDetails?.contactName?.split(' ')[1] || '',
     contact: inspectionData?.applicationDetails?.contactEmail || '',
     phone: inspectionData?.applicationDetails?.contactPhone || '',
+    location: inspectionData?.applicationDetails?.propertyAddress || '',
     isWashbasin: isCompleted ? inspectionData?.inspectionDetails?.generalQuestions?.question1 === 'Yes' : false,
     isRefrigerator: isCompleted ? inspectionData?.inspectionDetails?.generalQuestions?.question2 === 'Yes' : false,
     isGarage: isCompleted ? inspectionData?.inspectionDetails?.generalQuestions?.question3 === 'Yes' : false,
@@ -87,6 +89,7 @@ export default function ApplicationFormScreen() {
       lastName: '',
       contact: '',
       phone: '',
+      location: '',
       isWashbasin: false,
       isRefrigerator: false,
       isGarage: false,
@@ -190,7 +193,8 @@ export default function ApplicationFormScreen() {
       { field: 'applicationId', label: 'Inspection ID' },
       { field: 'firstName', label: 'First Name' },
       { field: 'lastName', label: 'Last Name' },
-      { field: 'phone', label: 'Phone Number' }
+      { field: 'phone', label: 'Phone Number' },
+      { field: 'location', label: 'Location' }
     ];
     
     const newErrors: Record<string, string> = {};
@@ -347,13 +351,15 @@ export default function ApplicationFormScreen() {
           </View>
         )}
 
-        {isCompleted && isViewing && (
+        {isCompleted && (
           <View style={styles.infoMessage}>
             <Ionicons name="eye" size={24} color="#28a745" />
             <Text style={styles.infoText}>Viewing completed inspection data. All fields are prefilled.</Text>
           </View>
         )}
       </View>
+
+      <Text style={styles.sectionTitle}>Customer Details</Text>
       
       <Text style={styles.requiredFieldsNote}>Fields marked with * are required</Text>
       
@@ -364,122 +370,184 @@ export default function ApplicationFormScreen() {
         </View>
       )}
 
-      <Text style={styles.label}>Inspection ID *</Text>
-      <TextInput
-        style={[styles.input, errors.applicationId ? styles.inputError : null]}
-        value={formData.applicationId}
-        onChangeText={(text) => handleFieldChange('applicationId', text)}
-        onBlur={() => {
-          if (!formData.applicationId.trim()) {
-            setErrors({ ...errors, applicationId: 'Inspection ID is required' });
-          }
-        }}
-        placeholder="Enter Inspection ID"
-        editable={!isViewing}
-      />
-      {errors.applicationId ? (
-        <Text style={styles.errorText}>{errors.applicationId}</Text>
-      ) : null}
+      
 
-      <Text style={styles.label}>First Name *</Text>
-      <TextInput
-        style={[styles.input, errors.firstName ? styles.inputError : null]}
-        value={formData.firstName}
-        onChangeText={(text) => handleFieldChange('firstName', text)}
-        onBlur={() => {
-          if (!formData.firstName.trim()) {
-            setErrors({ ...errors, firstName: 'First Name is required' });
-          }
-        }}
-        placeholder="Enter your first name"
-        editable={!isViewing}
-      />
-      {errors.firstName ? (
-        <Text style={styles.errorText}>{errors.firstName}</Text>
-      ) : null}
+      <View style={styles.formSection}>
+        
+        <Text style={styles.label}>Inspection ID *</Text>
+        {isViewing ? (
+          <Text style={styles.displayText}>{formData.applicationId}</Text>
+        ) : (
+          <>
+            <TextInput
+              style={[styles.input, errors.applicationId ? styles.inputError : null]}
+              value={formData.applicationId}
+              onChangeText={(text) => handleFieldChange('applicationId', text)}
+              onBlur={() => {
+                if (!formData.applicationId.trim()) {
+                  setErrors({ ...errors, applicationId: 'Inspection ID is required' });
+                }
+              }}
+              placeholder="Enter Inspection ID"
+            />
+            {errors.applicationId ? (
+              <Text style={styles.errorText}>{errors.applicationId}</Text>
+            ) : null}
+          </>
+        )}
 
-      <Text style={styles.label}>Last Name *</Text>
-      <TextInput
-        style={[styles.input, errors.lastName ? styles.inputError : null]}
-        value={formData.lastName}
-        onChangeText={(text) => handleFieldChange('lastName', text)}
-        onBlur={() => {
-          if (!formData.lastName.trim()) {
-            setErrors({ ...errors, lastName: 'Last Name is required' });
-          }
-        }}
-        placeholder="Enter your last name"
-        editable={!isViewing}
-      />
-      {errors.lastName ? (
-        <Text style={styles.errorText}>{errors.lastName}</Text>
-      ) : null}
+        <Text style={styles.label}>First Name *</Text>
+        {isViewing ? (
+          <Text style={styles.displayText}>{`${formData.firstName} ${formData.lastName}`}</Text>
+        ) : (
+          <>
+            <TextInput
+              style={[styles.input, errors.firstName ? styles.inputError : null]}
+              value={formData.firstName}
+              onChangeText={(text) => handleFieldChange('firstName', text)}
+              onBlur={() => {
+                if (!formData.firstName.trim()) {
+                  setErrors({ ...errors, firstName: 'First Name is required' });
+                }
+              }}
+              placeholder="Enter your first name"
+            />
+            {errors.firstName ? (
+              <Text style={styles.errorText}>{errors.firstName}</Text>
+            ) : null}
 
-      <Text style={styles.label}>Contact Email</Text>
-      <TextInput
-        style={styles.input}
-        value={formData.contact}
-        onChangeText={(text) => handleFieldChange('contact', text)}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        editable={!isViewing}
-      />
+            <Text style={styles.label}>Last Name *</Text>
+            <TextInput
+              style={[styles.input, errors.lastName ? styles.inputError : null]}
+              value={formData.lastName}
+              onChangeText={(text) => handleFieldChange('lastName', text)}
+              onBlur={() => {
+                if (!formData.lastName.trim()) {
+                  setErrors({ ...errors, lastName: 'Last Name is required' });
+                }
+              }}
+              placeholder="Enter your last name"
+            />
+            {errors.lastName ? (
+              <Text style={styles.errorText}>{errors.lastName}</Text>
+            ) : null}
+          </>
+        )}
+        
+        <Text style={styles.label}>Location *</Text>
+        {isViewing ? (
+          <Text style={styles.displayText}>{formData.location}</Text>
+        ) : (
+          <>
+            <TextInput
+              style={[styles.input, errors.location ? styles.inputError : null]}
+              value={formData.location}
+              onChangeText={(text) => handleFieldChange('location', text)}
+              onBlur={() => {
+                if (!formData.location.trim()) {
+                  setErrors({ ...errors, location: 'Location is required' });
+                }
+              }}
+              placeholder="Enter Location"
+            />
+            {errors.location ? (
+              <Text style={styles.errorText}>{errors.location}</Text>
+            ) : null}
+          </>
+        )}
 
-      <Text style={styles.label}>Phone Number *</Text>
-      <TextInput
-        style={[styles.input, errors.phone ? styles.inputError : null]}
-        value={formData.phone}
-        onChangeText={(text) => handleFieldChange('phone', text)}
-        onBlur={() => {
-          if (!formData.phone.trim()) {
-            setErrors({ ...errors, phone: 'Phone Number is required' });
-          }
-        }}
-        placeholder="Enter your phone number"
-        keyboardType="phone-pad"
-        editable={!isViewing}
-      />
-      {errors.phone ? (
-        <Text style={styles.errorText}>{errors.phone}</Text>
-      ) : null}
+        <Text style={styles.label}>Contact Phone *</Text>
+        {isViewing ? (
+          <Text style={styles.displayText}>{formData.phone}</Text>
+        ) : (
+          <>
+            <TextInput
+              style={[styles.input, errors.phone ? styles.inputError : null]}
+              value={formData.phone}
+              onChangeText={(text) => handleFieldChange('phone', text)}
+              onBlur={() => {
+                if (!formData.phone.trim()) {
+                  setErrors({ ...errors, phone: 'Phone Number is required' });
+                }
+              }}
+              placeholder="Enter your phone number"
+              keyboardType="phone-pad"
+            />
+            {errors.phone ? (
+              <Text style={styles.errorText}>{errors.phone}</Text>
+            ) : null}
+          </>
+        )}
+
+        <Text style={styles.label}>Contact Email *</Text>
+        {isViewing ? (
+          <Text style={styles.displayText}>{formData.contact}</Text>
+        ) : (
+          <TextInput
+            style={styles.input}
+            value={formData.contact}
+            onChangeText={(text) => handleFieldChange('contact', text)}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+          />
+        )}
+      </View>
 
       <View style={styles.formSection}>
         <Text style={styles.sectionTitle}>General Questions</Text>
         
         <View style={styles.formRow}>
           <Text style={styles.labelText}>Is there a washbasin in the laundry?</Text>
-          <Switch
-            value={formData.isWashbasin}
-            onValueChange={(value) => setFormData({...formData, isWashbasin: value})}
-            disabled={isViewing && status === 'Completed'}
-          />
+          {isViewing ? (
+            <Text style={styles.displayText}>{formData.isWashbasin ? 'Yes' : 'No'}</Text>
+          ) : (
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchValueText}>{formData.isWashbasin ? 'Yes' : 'No'}</Text>
+              <Switch
+                value={formData.isWashbasin}
+                onValueChange={(value) => setFormData({...formData, isWashbasin: value})}
+              />
+            </View>
+          )}
         </View>
         
         <View style={styles.formRow}>
           <Text style={styles.labelText}>Is there a refrigerator in the property?</Text>
-          <Switch
-            value={formData.isRefrigerator}
-            onValueChange={(value) => setFormData({...formData, isRefrigerator: value})}
-            disabled={isViewing && status === 'Completed'}
-          />
+          {isViewing ? (
+            <Text style={styles.displayText}>{formData.isRefrigerator ? 'Yes' : 'No'}</Text>
+          ) : (
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchValueText}>{formData.isRefrigerator ? 'Yes' : 'No'}</Text>
+              <Switch
+                value={formData.isRefrigerator}
+                onValueChange={(value) => setFormData({...formData, isRefrigerator: value})}
+              />
+            </View>
+          )}
         </View>
         
         <View style={styles.formRow}>
           <Text style={styles.labelText}>Is there a usable garage on the property?</Text>
-          <Switch
-            value={formData.isGarage}
-            onValueChange={(value) => setFormData({...formData, isGarage: value})}
-            disabled={isViewing && status === 'Completed'}
-          />
+          {isViewing ? (
+            <Text style={styles.displayText}>{formData.isGarage ? 'Yes' : 'No'}</Text>
+          ) : (
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchValueText}>{formData.isGarage ? 'Yes' : 'No'}</Text>
+              <Switch
+                value={formData.isGarage}
+                onValueChange={(value) => setFormData({...formData, isGarage: value})}
+              />
+            </View>
+          )}
         </View>
 
         <View style={styles.formRow}>
-          <Text style={styles.labelText}>Generic Question 4</Text>
+          <Text style={styles.labelText}>What steps have you taken to secure the property?</Text>
         </View>
         <TextInput
           style={[styles.textInput, styles.textArea]}
           multiline
-          placeholder="Enter answer for generic question 4"
+          placeholder="Enter your answer here..."
           value={formData.genericQuestion4}
           onChangeText={(text) => handleFieldChange('genericQuestion4', text)}
           editable={!(isViewing && status === 'Completed')}
@@ -639,22 +707,15 @@ const styles = StyleSheet.create({
   },
   switchContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 8,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  switchLabel: {
-    fontSize: 16,
-    flex: 1,
-    paddingRight: 10,
-  },
   switchValueText: {
-    marginLeft: 10,
+    marginRight: 10,
     fontWeight: 'bold',
     color: '#007AFF',
     width: 40,
@@ -936,5 +997,15 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#155724',
     flex: 1,
+  },
+  displayText: {
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#dee2e6',
   },
 });

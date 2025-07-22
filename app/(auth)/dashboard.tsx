@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,10 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import fetchDashboardData from '@/api/dashboard_api';
 
 // Define the type for icon names
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-
 // Define inspection types
 const inspectionTypes = [
   { id: 1, name: 'Residential Inspection', icon: 'home-outline' as IconName },
@@ -26,13 +26,14 @@ const inspectionTypes = [
   { id: 4, name: 'Pre-Purchase Inspection', icon: 'cart-outline' as IconName },
   { id: 5, name: 'Insurance Inspection', icon: 'shield-outline' as IconName },
   { id: 6, name: 'Maintenance Inspection', icon: 'construct-outline' as IconName },
+  { id: 7, name: 'Inspection Schedule', icon: 'home-outline' as IconName },
 ];
 
 // Mock inspection data organized by date
 const mockInspections = [
   {
     id: '1',
-    date: '2023-06-15',
+    date: new Date().toISOString().split('T')[0],
     inspections: [
       { id: '101', type: 1, address: '123 Main St', status: 'Completed', time: '09:30 AM' },
       { id: '102', type: 3, address: '456 Oak Ave', status: 'Pending', time: '02:00 PM' },
@@ -40,14 +41,14 @@ const mockInspections = [
   },
   {
     id: '2',
-    date: '2023-06-14',
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
     inspections: [
       { id: '103', type: 2, address: '789 Business Park', status: 'Completed', time: '10:15 AM' },
     ]
   },
   {
     id: '3',
-    date: '2023-06-12',
+    date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
     inspections: [
       { id: '104', type: 5, address: '321 Pine Rd', status: 'Completed', time: '11:00 AM' },
       { id: '105', type: 4, address: '654 Maple Dr', status: 'Cancelled', time: '03:30 PM' },
@@ -56,7 +57,7 @@ const mockInspections = [
   },
   {
     id: '4',
-    date: '2023-06-10',
+    date: new Date(Date.now() - 259200000).toISOString().split('T')[0],
     inspections: [
       { id: '107', type: 1, address: '159 Elm St', status: 'Completed', time: '09:00 AM' },
       { id: '108', type: 3, address: '753 Birch Ave', status: 'Completed', time: '01:45 PM' },
@@ -85,10 +86,19 @@ export default function DashboardScreen() {
   const [selectedInspection, setSelectedInspection] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [myDate, setMyDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDashboardData().then((items: any) => {
+        setMyDate(items.items[0].creationDate);
+    });
+  }, []);
+        console.log('\n\nDashboard:', myDate);
 
   const handleInspectionSelect = (id: number) => {
     setSelectedInspection(id);
     setShowSidebar(false); // Hide sidebar on mobile after selection
+
   };
 
   const handleNewInspection = () => {
@@ -96,7 +106,7 @@ export default function DashboardScreen() {
       const typeName = inspectionTypes.find(t => t.id === selectedInspection)?.name || 'Inspection';
       router.push({
         pathname: '/(auth)/application-form',
-        params: { 
+        params: {
           inspectionType: selectedInspection,
           inspectionName: typeName
         }
@@ -145,7 +155,7 @@ export default function DashboardScreen() {
 
     router.push({
       pathname: '/(auth)/application-form',
-      params: { 
+      params: {
         inspectionType: inspection.type,
         inspectionName,
         isViewing: inspection.status === 'Completed' ? 'true' : 'false',
@@ -160,33 +170,33 @@ export default function DashboardScreen() {
   };
 
   // Filter inspections by selected date and type
-  const filteredInspections = selectedDate 
+  const filteredInspections = selectedDate
     ? mockInspections.find(item => item.date === selectedDate)?.inspections.filter(
-        inspection => !selectedInspection || inspection.type === selectedInspection
-      ) || []
+      inspection => !selectedInspection || inspection.type === selectedInspection
+    ) || []
     : [];
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.menuButton}
           onPress={() => setShowSidebar(!showSidebar)}
         >
           <Ionicons name="menu" size={24} color="#333" />
         </TouchableOpacity>
-        
+
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../../assets/images/Logo.jpg')} 
-            style={styles.logo} 
+          <Image
+            source={require('../../assets/images/Logo.jpg')}
+            style={styles.logo}
             resizeMode="contain"
           />
         </View>
-        
+
         <Text style={styles.headerTitle}>Shire of Irwin</Text>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.signOutButton}
           onPress={() => {
             Alert.alert(
@@ -218,7 +228,17 @@ export default function DashboardScreen() {
                   styles.inspectionItem,
                   selectedInspection === type.id && styles.selectedInspection
                 ]}
-                onPress={() => handleInspectionSelect(type.id)}
+                // onPress={() => handleInspectionSelect(type.id)}
+                onPress={() => {
+                  if (type.name === 'Inspection Schedule') {
+                    router.push({
+                      pathname: '/(auth)/inspectionSchedule',
+                      params: { id: '307' }
+                    });
+                  } else {
+                    handleInspectionSelect(type.id);
+                  }
+                }}
               >
                 <Ionicons name={type.icon} size={24} color={selectedInspection === type.id ? "#fff" : "#333"} />
                 <Text style={[
@@ -237,10 +257,10 @@ export default function DashboardScreen() {
           {selectedInspection ? (
             <View style={styles.selectedInspectionHeader}>
               <View style={styles.selectedInspectionInfo}>
-                <Ionicons 
-                  name={inspectionTypes.find(t => t.id === selectedInspection)?.icon || 'document-outline'} 
-                  size={24} 
-                  color="#007AFF" 
+                <Ionicons
+                  name={inspectionTypes.find(t => t.id === selectedInspection)?.icon || 'document-outline'}
+                  size={24}
+                  color="#007AFF"
                 />
                 <Text style={styles.selectedInspectionTitle}>
                   {inspectionTypes.find(t => t.id === selectedInspection)?.name}
@@ -251,23 +271,23 @@ export default function DashboardScreen() {
                 onPress={handleNewInspection}
               >
                 <Text style={styles.newInspectionButtonText}>+
-                  
+
                 </Text>
               </TouchableOpacity>
             </View>
           ) : (
             <Text style={styles.welcomeText}>
-              Select an inspection type to begin
+              Select a date to begin
             </Text>
           )}
-          
+
           <View style={styles.dashboardContent}>
             {/* Date selector */}
             <View style={styles.dateSelector}>
               <Text style={styles.dateSelectorTitle}>Inspection Dates</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
                 style={styles.dateList}
                 contentContainerStyle={styles.dateListContent}
               >
@@ -296,7 +316,7 @@ export default function DashboardScreen() {
                 ))}
               </ScrollView>
             </View>
-            
+
             {/* Inspections list */}
             {selectedDate ? (
               <View style={styles.inspectionsList}>
@@ -311,7 +331,7 @@ export default function DashboardScreen() {
                     <Text style={styles.clearButtonText}>Clear Selection</Text>
                   </TouchableOpacity>
                 </View>
-                
+
                 {filteredInspections.length > 0 ? (
                   <FlatList
                     data={filteredInspections}
@@ -322,10 +342,10 @@ export default function DashboardScreen() {
                         onPress={() => handleInspectionDetails(item)}
                       >
                         <View style={styles.inspectionCardHeader}>
-                          <Ionicons 
-                            name={inspectionTypes.find(t => t.id === item.type)?.icon || 'document-outline'} 
-                            size={24} 
-                            color="#007AFF" 
+                          <Ionicons
+                            name={inspectionTypes.find(t => t.id === item.type)?.icon || 'document-outline'}
+                            size={24}
+                            color="#007AFF"
                           />
                           <Text style={styles.inspectionCardTitle}>
                             {inspectionTypes.find(t => t.id === item.type)?.name}
