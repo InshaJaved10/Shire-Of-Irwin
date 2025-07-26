@@ -86,14 +86,30 @@ export default function DashboardScreen() {
   const [selectedInspection, setSelectedInspection] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [myDate, setMyDate] = useState<string | null>(null);
+  const [myDates, setMyDates] = useState<string[]>([]);
+  const [formNames, setFormNames] = useState<string[]>([]);
+  const [status, setStatus] = useState<string[]>([]);
 
   useEffect(() => {
     fetchDashboardData().then((items: any) => {
-        setMyDate(items.items[0].creationDate);
+      // Expecting items.items to be an array of objects with creationDate and formName
+      if (Array.isArray(items.items)) {
+        setMyDates(items.items.map((item: any) => item.creationDate));
+        setFormNames(items.items.map((item: any) => item.formName || ''));
+        setStatus(items.items.map((item: any) => item.status || null))  ;
+      } else if (items.creationDate) {
+        setMyDates([items.creationDate]);
+        setFormNames([items.formName || '']);
+        setStatus([items.status || null]);
+      } else {
+        setMyDates([]);
+        setFormNames([]);
+      }
     });
   }, []);
-        console.log('\n\nDashboard:', myDate);
+  console.log('\n\nDashboard API Dat:', myDates);  ///////////////////////////////////
+  console.log('\n\nDashboard API FormNames:', formNames);  ///////////////////////////////////
+  console.log('\n\nDashboard API Status:', status);  ///////////////////////////////////
 
   const handleInspectionSelect = (id: number) => {
     setSelectedInspection(id);
@@ -212,6 +228,29 @@ export default function DashboardScreen() {
           <Text style={styles.signOutButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
+      {/* Show all API dates below header for debug */}
+
+      {/* Debug: Show API Dates and formNames arrays visually */}
+      {myDates.length > 0 && (
+        <View style={{alignItems: 'center', marginVertical: 4}}>
+          <Text style={{fontSize: 15, color: '#007AFF', fontWeight: 'bold'}}>
+            api dates:
+          </Text>
+          <Text style={{fontSize: 15, color: '#007AFF'}}>
+            {myDates.map((d, i) => `${i + 1}: ${d}`).join(' | ')}
+          </Text>
+        </View>
+      )}
+      {formNames.length > 0 && (
+        <View style={{alignItems: 'center', marginVertical: 4}}>
+          <Text style={{fontSize: 15, color: '#FF9500'}}>
+            {`formNames: [${formNames.join(', ')}]`}
+          </Text>
+        </View>
+      )}
+
+// ...existing code...
+
 
       <View style={styles.content}>
         {/* Sidebar with inspection types */}
@@ -222,6 +261,7 @@ export default function DashboardScreen() {
           <Text style={styles.sidebarTitle}>Inspection Types</Text>
           <ScrollView style={styles.inspectionList}>
             {inspectionTypes.map((type) => (
+              console.log('Inspection Typewwwwwwwwwwwwwwwwwww:', formNames[0]), // Debug log
               <TouchableOpacity
                 key={type.id}
                 style={[
@@ -291,7 +331,7 @@ export default function DashboardScreen() {
                 style={styles.dateList}
                 contentContainerStyle={styles.dateListContent}
               >
-                {mockInspections.map((item) => (
+                {mockInspections.map((item, idx) => (
                   <TouchableOpacity
                     key={item.id}
                     style={[
@@ -300,13 +340,13 @@ export default function DashboardScreen() {
                     ]}
                     onPress={() => setSelectedDate(item.date)}
                   >
-                    <Text style={[
+                    <Text style={[ 
                       styles.dateText,
                       selectedDate === item.date && styles.selectedDateText
                     ]}>
-                      {formatDate(item.date)}
+                      {myDates[idx] ? formatDate(myDates[idx]) : formatDate(item.date)}
                     </Text>
-                    <Text style={[
+                    <Text style={[ 
                       styles.inspectionCount,
                       selectedDate === item.date && styles.selectedDateText
                     ]}>
@@ -323,7 +363,7 @@ export default function DashboardScreen() {
                 <View style={styles.inspectionsHeader}>
                   <Text style={styles.inspectionsHeaderText}>
                     Inspections for {formatDate(selectedDate)}
-                  </Text>
+                  </Text> 
                   <TouchableOpacity
                     style={styles.clearButton}
                     onPress={() => setSelectedDate(null)}
@@ -335,32 +375,24 @@ export default function DashboardScreen() {
                 {filteredInspections.length > 0 ? (
                   <FlatList
                     data={filteredInspections}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        style={styles.inspectionCard}
-                        onPress={() => handleInspectionDetails(item)}
-                      >
-                        <View style={styles.inspectionCardHeader}>
-                          <Ionicons
-                            name={inspectionTypes.find(t => t.id === item.type)?.icon || 'document-outline'}
-                            size={24}
-                            color="#007AFF"
-                          />
-                          <Text style={styles.inspectionCardTitle}>
-                            {inspectionTypes.find(t => t.id === item.type)?.name}
-                          </Text>
-                          <View style={[
-                            styles.statusBadge,
-                            { backgroundColor: getStatusColor(item.status) }
-                          ]}>
-                            <Text style={styles.statusText}>{item.status}</Text>
-                          </View>
-                        </View>
-                        <Text style={styles.inspectionAddress}>{item.address}</Text>
-                        <Text style={styles.inspectionTime}>{item.time}</Text>
-                      </TouchableOpacity>
-                    )}
+                    keyExtractor={(item, idx) => item.id + '-' + idx}
+                    renderItem={({ item, index }) => {
+                      // Show the form name as a big heading inside the card, remove the date
+                      const formName = formNames[index];
+                      return (
+                        <TouchableOpacity
+                          style={styles.inspectionCard}
+                          onPress={() => handleInspectionDetails(item)}
+                        >
+                          {formName && (
+                            <Text style={{fontSize: 20, color: '#007AFF', textAlign: 'left', fontWeight: 'bold', marginBottom: 8}}>
+                              {formName}
+                            </Text>
+                          )}
+                          <Text style={styles.inspectionTime}>{item.time || ''}</Text>
+                        </TouchableOpacity>
+                      );
+                    }}
                     contentContainerStyle={styles.inspectionsListContent}
                   />
                 ) : (

@@ -1,7 +1,8 @@
-const fetchDashboardData  = async (): Promise<string | null> => {
+const fetchDashboardData  = async (): Promise<any> => {
   try {
     const response = await fetch(
-      'https://oic-vbcs-oic-vb-axetemueuybx.builder.me-dubai-1.ocp.oraclecloud.com/ic/builder/rt/Shire_of_Irwin_DEV/live/resources/data/ExcessAnimalForm?onlyData=true',
+      'https://oic-vbcs-oic-vb-axetemueuybx.builder.me-dubai-1.ocp.oraclecloud.com:443/ic/builder/design/LGCSA_BackOffice_Dev/1.0.1/resources/data/InspectionSchedule',
+
       {
         method: 'GET',
         headers: {
@@ -17,7 +18,6 @@ const fetchDashboardData  = async (): Promise<string | null> => {
     }
 
     const data = await response.json();
-
     return data ?? null;
   } catch (error) {
     console.error('Error fetching creationDate:', error);
