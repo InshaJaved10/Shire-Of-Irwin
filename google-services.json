@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "981346366331",
-    "project_id": "shireofirwin-7ff6a",
-    "storage_bucket": "shireofirwin-7ff6a.firebasestorage.app"
+    "project_number": "846029307639",
+    "project_id": "shire-of-irwin-9c131",
+    "storage_bucket": "shire-of-irwin-9c131.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:981346366331:android:4fb2df9e8004107b9103de",
+        "mobilesdk_app_id": "1:846029307639:android:62a389a46a485b2e709df2",
         "android_client_info": {
-          "package_name": "com.itanz.ShireOfIrwin"
+          "package_name": "com.itanzgroup.shireOfIrwin"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCv8e4XbowsJ27uSM7bF5_W4-yRLhnr1no"
+          "current_key": "AIzaSyCnlmqUKtv-7yz2CAOIao2NqJOzFC65XZc"
         }
       ],
       "services": {

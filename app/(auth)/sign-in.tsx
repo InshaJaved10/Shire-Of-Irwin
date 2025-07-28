@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -26,19 +26,24 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  //Redirect to dashboard on initial load without asking password or email
+  useEffect(() => {
+    router.replace('/(auth)/dashboard');
+  }, [router]);
+
   const handleSignIn = async () => {
     setLoading(true);
-    
+
     try {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Simple validation
       if (!email.trim() || !password.trim()) {
         Alert.alert('Error', 'Please enter both email and password');
         return;
       }
-      
+
       // Check credentials
       if (email === DEFAULT_EMAIL && password === DEFAULT_PASSWORD) {
         // Successful login
@@ -68,17 +73,18 @@ export default function SignInScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../../assets/images/Logo.jpg')} 
-            style={styles.logo} 
+          <Image
+            source={require('../../assets/images/Logo.jpg')}
+            style={styles.logo}
             resizeMode="contain"
           />
+
           <Text style={styles.appTitle}>Shire of Irwin Inspections</Text>
         </View>
-        
+
         <View style={styles.formContainer}>
           <Text style={styles.title}>Sign In</Text>
-          
+
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -89,7 +95,7 @@ export default function SignInScreen() {
             autoCapitalize="none"
             testID="email-input"
           />
-          
+
           <Text style={styles.label}>Password</Text>
           <View style={styles.passwordContainer}>
             <TextInput
@@ -100,27 +106,27 @@ export default function SignInScreen() {
               secureTextEntry={!showPassword}
               testID="password-input"
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.eyeIcon}
               onPress={() => setShowPassword(!showPassword)}
               accessibilityLabel={showPassword ? "Hide password" : "Show password"}
             >
-              <Ionicons 
-                name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
-                size={24} 
-                color="#007AFF" 
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={24}
+                color="#007AFF"
               />
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.defaultAccountButton}
             onPress={handleUseDefaultAccount}
             testID="default-account-button"
           >
             <Text style={styles.defaultAccountText}>Use Default Account</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.signInButton, loading && styles.buttonDisabled]}
             onPress={handleSignIn}
@@ -133,7 +139,7 @@ export default function SignInScreen() {
               <Text style={styles.signInButtonText}>Sign In</Text>
             )}
           </TouchableOpacity>
-          
+
           <View style={styles.signUpContainer}>
             <Text style={styles.signUpText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/sign-up')} testID="sign-up-link">
